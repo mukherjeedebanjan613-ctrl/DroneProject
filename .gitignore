@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Editor settings
+.vscode/
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Test and tool output
+.pytest_cache/
+.coverage
+htmlcov/

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AeroSafeX</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header><div><span class="eyebrow">SAFETY-AWARE DRONE MISSION COMPILER</span><h1>AeroSafeX</h1></div><div id="status" class="status idle">READY</div></header>
+  <main>
+    <section class="editor panel"><div class="panel-title"><h2>Mission Source</h2><button id="compile">Compile & Simulate</button></div><textarea id="source" spellcheck="false"></textarea><div class="hint">Simulation starts only after semantic and safety validation passes.</div></section>
+    <section class="map-panel panel"><div class="panel-title"><h2>Mission Map</h2><div class="controls"><button id="play" disabled>Play</button><button id="pause" disabled>Pause</button><button id="reset" disabled>Reset</button><label>Speed <input id="speed" type="range" min="1" max="4" value="2"></label></div></div><canvas id="map" width="820" height="560"></canvas></section>
+    <section class="details panel"><h2>Live Telemetry</h2><dl id="telemetry"><dt>Mission status</dt><dd>Waiting for compilation</dd></dl><h2>Compiler Pipeline</h2><ol id="pipeline"><li>Lexer</li><li>Parser & AST</li><li>Semantic Analysis</li><li>Safety Analysis</li><li>IR Optimization</li><li>Code Generation</li><li>Drone Simulation</li></ol></section>
+    <section class="output panel"><h2>Safety & Compilation Output</h2><pre id="output">Load a mission and select “Compile & Simulate”.</pre></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
