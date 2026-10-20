@@ -15,3 +15,5 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
+# Streamlit
+.streamlit/
