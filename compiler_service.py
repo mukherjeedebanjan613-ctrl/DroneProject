@@ -13,6 +13,7 @@ from lexer import Lexer, LexerError
 from parser import Parser, ParserError
 from safety_analyzer import SafetyAnalyzer
 from semantic_analyzer import SemanticAnalyzer, SemanticError
+from ml_battery import model as battery_model
 
 
 def compile_source(source: str) -> dict[str, Any]:
@@ -29,6 +30,16 @@ def compile_source(source: str) -> dict[str, Any]:
         return {"status": "REJECTED", "stage": "Semantic", "error": str(error)}
 
     report = SafetyAnalyzer(mission).analyze()
+    hover_seconds = sum(
+        float(command.arguments[0])
+        for command in mission.commands
+        if command.name == "HOVER" and isinstance(command.arguments[0], (int, float))
+    )
+    configured_battery = float(mission.configuration.get("BATTERY", 100.0))
+    configured_altitude = float(mission.configuration.get("MAX_ALTITUDE", 0.0))
+    ml_prediction = battery_model.predict(
+        report.distance, configured_altitude, hover_seconds, configured_battery
+    )
     base = {
         "tokens": len(tokens),
         "waypoints": mission.waypoints,
@@ -38,6 +49,11 @@ def compile_source(source: str) -> dict[str, Any]:
         "route": report.route,
         "distance": report.distance,
         "estimated_battery_used": report.estimated_battery_used,
+        "ml_battery_prediction": {
+            "predicted_use": round(ml_prediction.predicted_use, 2),
+            "remaining_battery": round(ml_prediction.remaining_battery, 2),
+            "confidence": ml_prediction.confidence,
+        },
         "issues": [{"level": item.level.value, "message": item.message} for item in report.issues],
         "symbol_count": {"waypoints": len(symbols.waypoints), "variables": len(symbols.variables)},
     }
