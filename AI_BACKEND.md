@@ -15,6 +15,9 @@ Endpoints:
 - `POST /api/ai/generate` – convert `{ "prompt": "..." }` into DSL and validate it
 - `POST /api/ml/predict-battery` – predict battery usage from distance, altitude, and hover time
 
+The same server also serves the browser interface at `http://127.0.0.1:8000/`.
+Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
+
 The AI assistant is deliberately conservative and offline. It generates a
 starter mission, but the normal lexer, parser, semantic analyzer, and safety
 analyzer remain authoritative. The battery model is a transparent linear

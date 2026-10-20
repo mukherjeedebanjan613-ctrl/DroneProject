@@ -7,6 +7,7 @@ from typing import Any
 try:
     from fastapi import FastAPI, HTTPException
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.staticfiles import StaticFiles
     from pydantic import BaseModel, Field
 except ImportError as error:  # pragma: no cover - exercised when dependencies are absent
     raise RuntimeError("FastAPI backend requires: pip install -r requirements.txt") from error
@@ -69,3 +70,9 @@ def predict_battery(request: BatteryRequest) -> dict[str, Any]:
     return {"predicted_use": round(prediction.predicted_use, 2),
             "remaining_battery": round(prediction.remaining_battery, 2),
             "confidence": prediction.confidence}
+
+
+# Serve the browser UI from the same origin as the API. API routes are
+# declared first, so /api/* continues to be handled by FastAPI endpoints.
+from pathlib import Path
+app.mount("/", StaticFiles(directory=Path(__file__).parent / "web", html=True), name="web")
