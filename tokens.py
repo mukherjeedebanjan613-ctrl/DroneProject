@@ -11,6 +11,9 @@ class TokenType(Enum):
     RESERVE = auto()
     SPEED = auto()
     MAX_ALTITUDE = auto()
+    MODE = auto()
+    ENERGY_SAVE = auto()
+    NORMAL = auto()
 
     # Variables
     SET = auto()

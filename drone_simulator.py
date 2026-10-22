@@ -11,6 +11,7 @@ class DroneSimulator:
     altitude: float = 0
     airborne: bool = False
     initial_battery: float = 100.0
+    flight_mode: str = "NORMAL"
     battery_level: float = 100.0
     mission_status: str = "PENDING"
     flight_state: str = "LANDED"
@@ -20,6 +21,7 @@ class DroneSimulator:
     flight_trace: list[tuple[float, float, float, float]] = field(default_factory=list)
 
     BATTERY_PER_DISTANCE = 0.05
+    ENERGY_SAVE_BATTERY_PER_DISTANCE = 0.035
 
     def __post_init__(self) -> None:
         self.battery_level = self.initial_battery
@@ -52,17 +54,25 @@ class DroneSimulator:
         start_x, start_y = self.position
         start_altitude = self.altitude
         distance = hypot(x - start_x, y - start_y)
-        battery_cost = distance * self.BATTERY_PER_DISTANCE
+        rate = (
+            self.ENERGY_SAVE_BATTERY_PER_DISTANCE
+            if self.flight_mode == "ENERGY_SAVE"
+            else self.BATTERY_PER_DISTANCE
+        )
+        battery_cost = distance * rate
+        # Energy-saving mode represents slower, smoother movement. The route
+        # and altitude remain unchanged; only execution efficiency changes.
+        steps = self.animation_steps * (2 if self.flight_mode == "ENERGY_SAVE" else 1)
 
         print(f"[SIM] MOVE -> ({x}, {y}, {altitude})")
-        for step in range(1, self.animation_steps + 1):
-            progress = step / self.animation_steps
+        for step in range(1, steps + 1):
+            progress = step / steps
             self.position = (
                 start_x + (x - start_x) * progress,
                 start_y + (y - start_y) * progress,
             )
             self.altitude = start_altitude + (altitude - start_altitude) * progress
-            self.battery_level = max(0.0, self.battery_level - battery_cost / self.animation_steps)
+            self.battery_level = max(0.0, self.battery_level - battery_cost / steps)
             self.flight_trace.append((self.x, self.y, self.altitude, self.battery_level))
             print(
                 f"[SIM]   position=({self.x:.1f}, {self.y:.1f}, {self.altitude:.1f}) "

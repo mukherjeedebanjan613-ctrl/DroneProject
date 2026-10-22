@@ -38,7 +38,11 @@ class IRGenerator:
         self.altitude: int | float = 0
 
     def generate(self) -> IRProgram:
-        self.program.emit("MISSION_BEGIN", self.mission.configuration.get("BATTERY", 100.0))
+        self.program.emit(
+            "MISSION_BEGIN",
+            self.mission.configuration.get("BATTERY", 100.0),
+            self.mission.configuration.get("MODE", "NORMAL"),
+        )
         for command in self.mission.commands:
             self._lower_command(command.name, command.arguments)
         self.program.emit("MISSION_END")

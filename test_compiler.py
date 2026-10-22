@@ -87,6 +87,22 @@ class AeroSafeXCompilerTests(unittest.TestCase):
         self.assertEqual([item.opcode for item in result.program.instructions], ["TAKEOFF", "MOVE", "LAND"])
         self.assertEqual(len(result.changes), 1)
 
+    def test_energy_save_mode_reduces_battery_use_without_changing_route(self):
+        source = (MISSIONS / "safe.aero").read_text(encoding="utf-8").replace(
+            "MAX_ALTITUDE 120", "MAX_ALTITUDE 120\nMODE ENERGY_SAVE"
+        )
+        mission = Parser(Lexer(source).tokenize()).parse()
+        SemanticAnalyzer(mission).analyze()
+        ir_program = IRGenerator(mission).generate()
+        generated_code = CodeGenerator(ir_program).generate()
+        namespace: dict[str, object] = {}
+        with redirect_stdout(StringIO()):
+            exec(generated_code, namespace)
+        drone = namespace["drone"]
+        self.assertEqual(drone.flight_mode, "ENERGY_SAVE")
+        self.assertEqual(drone.position, (0, 0))
+        self.assertLess(drone.battery_level, 100)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

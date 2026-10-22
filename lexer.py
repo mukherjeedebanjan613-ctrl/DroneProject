@@ -1,13 +1,8 @@
 from tokens import Token, TokenType
-
-
 class LexerError(Exception):
     """Raised when the lexer encounters invalid input."""
     pass
-
-
 class Lexer:
-
     KEYWORDS = {
         # Mission
         "MISSION": TokenType.MISSION,
@@ -20,6 +15,9 @@ class Lexer:
         "RESERVE": TokenType.RESERVE,
         "SPEED": TokenType.SPEED,
         "MAX_ALTITUDE": TokenType.MAX_ALTITUDE,
+        "MODE": TokenType.MODE,
+        "ENERGY_SAVE": TokenType.ENERGY_SAVE,
+        "NORMAL": TokenType.NORMAL,
 
         # Variables
         "SET": TokenType.SET,
@@ -54,7 +52,6 @@ class Lexer:
         "LOST": TokenType.LOST,
         "CONNECTED": TokenType.CONNECTED,
     }
-
     def __init__(self, source):
         self.source = source
         self.position = 0
@@ -103,7 +100,6 @@ class Lexer:
 
     def skip_comment(self):
         """Skip // comments."""
-
         if (
             self.current_char() == "/"
             and self.peek_char() == "/"
@@ -271,12 +267,10 @@ class Lexer:
                 start_line,
                 start_column
             )
-
         raise LexerError(
             f"Unknown operator '{char}' "
             f"at line {start_line}, column {start_column}"
         )
-
     def tokenize(self):
         """Convert the entire source program into tokens."""
 
@@ -343,7 +337,6 @@ class Lexer:
                 f"at line {self.line}, "
                 f"column {self.column}"
             )
-
         # End of file
         tokens.append(
             Token(
@@ -353,5 +346,4 @@ class Lexer:
                 self.column
             )
         )
-
         return tokens

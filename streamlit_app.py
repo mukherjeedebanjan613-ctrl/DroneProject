@@ -12,6 +12,7 @@ DEFAULT_SOURCE = (Path(__file__).parent / "test_missions" / "safe.aero").read_te
 st.set_page_config(page_title="AeroSafeX", page_icon="🚁", layout="wide")
 st.title("🚁 AeroSafeX")
 st.caption("Safety-aware drone mission compiler and simulator")
+st.info("Add `MODE ENERGY_SAVE` to a mission to use slower, more efficient movement while preserving the validated route and altitude.")
 
 source = st.text_area("Mission source (.aero)", value=DEFAULT_SOURCE, height=420)
 if st.button("Compile and simulate", type="primary"):

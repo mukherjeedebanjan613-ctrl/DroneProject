@@ -7,30 +7,20 @@ Grammar (one statement per line):
                    | IF condition NEWLINE THEN command | command
     condition     -> value comparison value
 """
-
 from dataclasses import dataclass, field
 from typing import Any, Optional
-
 from tokens import Token, TokenType
-
-
 class ParserError(Exception):
     """Raised when a valid token stream does not match the mission grammar."""
-
-
 @dataclass
 class Condition:
     left: Any
     operator: str
     right: Any
-
-
 @dataclass
 class Command:
     name: str
     arguments: list[Any] = field(default_factory=list)
-
-
 @dataclass
 class Mission:
     configuration: dict[str, Any] = field(default_factory=dict)
@@ -49,6 +39,7 @@ class Parser:
         TokenType.RESERVE: ("RESERVE", 1),
         TokenType.SPEED: ("SPEED", 1),
         TokenType.MAX_ALTITUDE: ("MAX_ALTITUDE", 1),
+        TokenType.MODE: ("MODE", 1),
     }
     COMMAND_ARGUMENTS = {
         TokenType.TAKEOFF: 1,
@@ -65,21 +56,17 @@ class Parser:
         TokenType.EQUAL, TokenType.NOT_EQUAL, TokenType.LESS_THAN,
         TokenType.LESS_EQUAL, TokenType.GREATER_THAN, TokenType.GREATER_EQUAL,
     }
-
     def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.position = 0
-
     @property
     def current(self) -> Token:
         return self.tokens[self.position]
-
     def advance(self) -> Token:
         token = self.current
         if token.type is not TokenType.EOF:
             self.position += 1
         return token
-
     def expect(self, token_type: TokenType) -> Token:
         if self.current.type is not token_type:
             raise ParserError(
@@ -87,14 +74,12 @@ class Parser:
                 f"at line {self.current.line}, column {self.current.column}"
             )
         return self.advance()
-
     def consume_newlines(self) -> None:
         while self.current.type is TokenType.NEWLINE:
             self.advance()
-
     def value(self) -> Any:
         token = self.current
-        if token.type in (TokenType.NUMBER, TokenType.IDENTIFIER):
+        if token.type in (TokenType.NUMBER, TokenType.IDENTIFIER, TokenType.ENERGY_SAVE, TokenType.NORMAL):
             self.advance()
             return token.value
         if token.type in (TokenType.BATTERY, TokenType.OBSTACLE, TokenType.ALTITUDE):
@@ -112,7 +97,6 @@ class Parser:
         raise ParserError(
             f"Expected a value at line {token.line}, column {token.column}"
         )
-
     def parse(self) -> Mission:
         mission = Mission()
         self.expect(TokenType.MISSION)
@@ -128,9 +112,7 @@ class Parser:
                 return mission
             self.parse_statement(mission)
             self.consume_newlines()
-
         raise ParserError("Expected 'MISSION END' before end of file")
-
     def parse_statement(self, mission: Mission) -> None:
         token_type = self.current.type
         if token_type in self.CONFIGURATION:
@@ -160,10 +142,8 @@ class Parser:
                 f"Unexpected {self.current.type.name} at line {self.current.line}, "
                 f"column {self.current.column}"
             )
-
     def number(self) -> float:
         return self.expect(TokenType.NUMBER).value
-
     def parse_no_fly_zone(self, mission: Mission) -> None:
         self.expect(TokenType.NO_FLY_ZONE)
         name = self.expect(TokenType.IDENTIFIER).value
@@ -173,7 +153,6 @@ class Parser:
         self.expect(TokenType.NEWLINE)
         self.expect(TokenType.END_ZONE)
         mission.no_fly_zones[name] = bounds
-
     def parse_safety_rule(self, mission: Mission) -> None:
         self.expect(TokenType.IF)
         condition = Condition(
@@ -184,7 +163,6 @@ class Parser:
         self.expect(TokenType.NEWLINE)
         self.expect(TokenType.THEN)
         mission.safety_rules.append((condition, self.parse_command()))
-
     def parse_comparison(self) -> str:
         if self.current.type not in self.COMPARISONS:
             raise ParserError(
@@ -192,7 +170,6 @@ class Parser:
                 f"column {self.current.column}"
             )
         return self.advance().value
-
     def parse_command(self) -> Command:
         command_token = self.current
         if command_token.type not in self.COMMAND_ARGUMENTS:

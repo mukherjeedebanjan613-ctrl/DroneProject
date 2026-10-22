@@ -1,8 +1,4 @@
-"""Generate executable Python simulator commands from AeroSafeX IR."""
-
 from ir import IRProgram
-
-
 class CodeGenerator:
     """Translate platform-neutral IR instructions into simulator API calls."""
 
@@ -14,7 +10,7 @@ class CodeGenerator:
         lines = [
             "from drone_simulator import DroneSimulator",
             "",
-            f"drone = DroneSimulator(initial_battery={initial_battery!r}, animation_steps=8, step_delay=0.08)",
+            f"drone = DroneSimulator(initial_battery={initial_battery!r}, flight_mode={self._flight_mode()!r}, animation_steps=8, step_delay=0.08)",
             "drone.start_mission()",
         ]
         for instruction in self.program.instructions:
@@ -28,6 +24,12 @@ class CodeGenerator:
             if instruction.opcode == "MISSION_BEGIN" and instruction.operands:
                 return instruction.operands[0]
         return 100.0
+
+    def _flight_mode(self) -> object:
+        for instruction in self.program.instructions:
+            if instruction.opcode == "MISSION_BEGIN" and len(instruction.operands) > 1:
+                return instruction.operands[1]
+        return "NORMAL"
 
     @staticmethod
     def _generate_instruction(opcode: str, operands: tuple[object, ...]) -> list[str]:

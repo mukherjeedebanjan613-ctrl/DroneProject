@@ -47,6 +47,10 @@ class SemanticAnalyzer:
         if maximum is not None and maximum <= 0:
             raise SemanticError("MAX_ALTITUDE must be greater than zero")
 
+        mode = self.symbols.configuration.get("MODE", "NORMAL")
+        if mode not in {"NORMAL", "ENERGY_SAVE"}:
+            raise SemanticError("MODE must be NORMAL or ENERGY_SAVE")
+
     def _validate_commands(self) -> None:
         airborne = False
         for command in self.mission.commands:
